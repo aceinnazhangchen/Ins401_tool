@@ -106,6 +106,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common_function.c" />
+    <ClCompile Include="device_log_thread.cpp" />
     <ClCompile Include="device_upgrade_thread.cpp" />
     <ClCompile Include="pcap_loop_thread.cpp" />
     <ClCompile Include="devices_manager.cpp" />
@@ -123,6 +124,7 @@
   <ItemGroup>
     <ClInclude Include="common_define.h" />
     <ClInclude Include="common_function.h" />
+    <QtMoc Include="device_log_thread.h" />
     <QtMoc Include="SCheckBoxHeaderView.h" />
     <QtMoc Include="devices_manager.h" />
     <QtMoc Include="device_upgrade_thread.h" />

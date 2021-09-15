@@ -34,20 +34,23 @@ public slots:
 	void onSendClicked();
 	void onClearClicked();
 	void onUpgradeClicked();
-	void onAddDevice(QString index_str);
-	void onUpdateDevice(QString index_str);
+	void onAddUpgradeDevice(QString index_str);
+	void onUpdateUpgradeDevice(QString index_str);
+	void onAddLogDevice(QString index_str);
+	void onUpdateLogDevice(QString index_str);
 	void onClearDevices();
-	void onAddRowClicked();
 	void onCheckAll(bool check);
 	void onChangeMode(int row, int mode);
 	void onUpdateStatus(int row, QString status);
 	void onUpdateProcess(int row, int percent);
 	void onUpgradeStep(int row, QString upgrade_step);
+	void onShowLogSize(int row, int percent);
 	void onDebugCheck(bool check);
 	void onFilterCheck(bool check);
 	void onFilterMacCheck(bool check);
 	void onCheckUpgradeFinished();
 	void onDevsTableChanged(int row, int col);
+	void onLogCheck(bool check);
 private:
     Ui::Ins401Class ui;
 	SCheckBoxHeaderView* m_checkHeader;

@@ -69,8 +69,7 @@ public:
 private:
 	bool m_isStop;
 	bool m_isRestarting;
-	int  m_send_sdk_count;
-	int  m_recv_sdk_count;
+	int	 m_wait_recv_count;
 	QMutex mutex;
 	QWaitCondition cond_wait;
 	uint16_t dev_cmd_status; //use cmd 

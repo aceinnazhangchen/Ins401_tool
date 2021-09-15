@@ -58,6 +58,9 @@
     <ClCompile Include="sta9100.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="device_log_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pcap_loop_thread.h">
@@ -70,6 +73,9 @@
       <Filter>Header Files</Filter>
     </QtMoc>
     <QtMoc Include="SCheckBoxHeaderView.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="device_log_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

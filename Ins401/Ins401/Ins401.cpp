@@ -31,28 +31,36 @@ Ins401::Ins401(QWidget *parent)
 	connect(ui.upgrade_pushButton, SIGNAL(clicked()), this, SLOT(onUpgradeClicked()));
 	connect(ui.send_pushButton, SIGNAL(clicked()), this, SLOT(onSendClicked()));
 	connect(ui.clear_pushButton, SIGNAL(clicked()), this, SLOT(onClearClicked()));
-	connect(ui.add_row_pushButton, SIGNAL(clicked()), this, SLOT(onAddRowClicked()));
 	connect(ui.debug_checkBox, SIGNAL(toggled(bool)), this, SLOT(onDebugCheck(bool)));
 	connect(ui.filter_checkBox, SIGNAL(toggled(bool)), this, SLOT(onFilterCheck(bool)));
 	connect(ui.filter_mac_checkBox, SIGNAL(toggled(bool)), this, SLOT(onFilterMacCheck(bool)));
 	connect(ui.devs_tableWidget, SIGNAL(cellChanged(int, int)), this, SLOT(onDevsTableChanged(int, int)));
+	connect(ui.log_checkBox, SIGNAL(toggled(bool)), this, SLOT(onLogCheck(bool)));
+	connect(m_checkHeader, SIGNAL(checkStausChange(bool)), this, SLOT(onCheckAll(bool)));
 
 	connect(&devices_manager::Instance(), SIGNAL(sgnLog(QString)), this, SLOT(onLog(QString)),Qt::QueuedConnection);
-	connect(&devices_manager::Instance(), SIGNAL(sgnAddDevice(QString)), this, SLOT(onAddDevice(QString)), Qt::QueuedConnection);
-	connect(&devices_manager::Instance(), SIGNAL(sgnUpdateDevice(QString)), this, SLOT(onUpdateDevice(QString)), Qt::QueuedConnection);
+	connect(&devices_manager::Instance(), SIGNAL(sgnAddUpgradeDevice(QString)), this, SLOT(onAddUpgradeDevice(QString)), Qt::QueuedConnection);
+	connect(&devices_manager::Instance(), SIGNAL(sgnUpdateUpgradeDevice(QString)), this, SLOT(onUpdateUpgradeDevice(QString)), Qt::QueuedConnection);
+	connect(&devices_manager::Instance(), SIGNAL(sgnAddLogDevice(QString)), this, SLOT(onAddLogDevice(QString)), Qt::QueuedConnection);
+	connect(&devices_manager::Instance(), SIGNAL(sgnUpdateLogDevice(QString)), this, SLOT(onUpdateLogDevice(QString)), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnClearDevices()), this, SLOT(onClearDevices()), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnChangeMode(int,int)), this, SLOT(onChangeMode(int, int)), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnUpdateStatus(int, QString)), this, SLOT(onUpdateStatus(int, QString)), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnUpdateProcess(int, int)), this, SLOT(onUpdateProcess(int, int)), Qt::QueuedConnection);	
 	connect(&devices_manager::Instance(), SIGNAL(sgnUpgradeStep(int, QString)), this, SLOT(onUpgradeStep(int, QString)), Qt::QueuedConnection);
+	connect(&devices_manager::Instance(), SIGNAL(sgnLogSize(int, int)), this, SLOT(onShowLogSize(int, int)), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnThreadFinished()), this, SLOT(onCheckUpgradeFinished()), Qt::QueuedConnection);
-	connect(m_checkHeader, SIGNAL(checkStausChange(bool)), this, SLOT(onCheckAll(bool)));
+
 	ui.devs_tableWidget->horizontalHeader()->setStretchLastSection(true);
 	ui.devs_tableWidget->setColumnWidth(0, 25);
 	for (int i = 1; i < col_process; i++) {
 		ui.devs_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
 	}
-	ui.add_row_pushButton->hide();
+
+	ui.log_devs_tableWidget->horizontalHeader()->setStretchLastSection(true);
+	for (int i = 0; i < 3; i++) {
+		ui.log_devs_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
+	}
 }
 
 Ins401::~Ins401()
@@ -130,10 +138,10 @@ void Ins401::upgrade_ui_set(bool enable)
 	ui.file_lineEdit->setEnabled(enable);
 	ui.select_pushButton->setEnabled(enable);
 	ui.listen_pushButton->setEnabled(enable);
-	ui.rtk_checkBox->setEnabled(enable);
-	ui.ins_checkBox->setEnabled(enable);
-	ui.sdk_checkBox->setEnabled(enable);
-	ui.imu_checkBox->setEnabled(enable);
+	//ui.rtk_checkBox->setEnabled(enable);
+	//ui.ins_checkBox->setEnabled(enable);
+	//ui.sdk_checkBox->setEnabled(enable);
+	//ui.imu_checkBox->setEnabled(enable);
 }
 
 void Ins401::onListenClicked()
@@ -205,11 +213,11 @@ void Ins401::onUpgradeClicked()
 	}
 }
 
-void Ins401::onAddDevice(QString index_str)
+void Ins401::onAddUpgradeDevice(QString index_str)
 {
 	uint64_t index = index_str.toULongLong();
-	upgrade_devices::iterator it = devices_manager::Instance().dst_dev_list.find(index);
-	if (it != devices_manager::Instance().dst_dev_list.end()) {
+	upgrade_devices::iterator it = devices_manager::Instance().upgrade_dev_list.find(index);
+	if (it != devices_manager::Instance().upgrade_dev_list.end()) {
 		device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 		int rowIdx = ui.devs_tableWidget->rowCount();
 		ui.devs_tableWidget->insertRow(rowIdx);
@@ -238,14 +246,42 @@ void Ins401::onAddDevice(QString index_str)
 	}
 }
 
-void Ins401::onUpdateDevice(QString index_str)
+void Ins401::onUpdateUpgradeDevice(QString index_str)
 {
 	uint64_t index = index_str.toULongLong();
-	upgrade_devices::iterator it = devices_manager::Instance().dst_dev_list.find(index);
-	if (it != devices_manager::Instance().dst_dev_list.end()) {
+	upgrade_devices::iterator it = devices_manager::Instance().upgrade_dev_list.find(index);
+	if (it != devices_manager::Instance().upgrade_dev_list.end()) {
 		device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 		QTableWidgetItem *item = ui.devs_tableWidget->item(upgrade_thread->get_ui_table_row(), col_info);
 		item->setText(upgrade_thread->get_dev_info());		
+	}
+}
+
+void Ins401::onAddLogDevice(QString index_str)
+{
+	uint64_t index = index_str.toULongLong();
+	log_devices::iterator it = devices_manager::Instance().log_dev_list.find(index);
+	if (it != devices_manager::Instance().log_dev_list.end()) {
+		device_log_thread* log_thread = (device_log_thread*)it.value();
+		int rowIdx = ui.log_devs_tableWidget->rowCount();
+		ui.log_devs_tableWidget->insertRow(rowIdx);
+		log_thread->set_ui_table_row(rowIdx);
+		QTableWidgetItem *mac_item = new QTableWidgetItem(log_thread->get_mac_str());
+		QTableWidgetItem *info_item = new QTableWidgetItem(log_thread->get_dev_info());
+		ui.log_devs_tableWidget->setItem(rowIdx, 0, mac_item);
+		ui.log_devs_tableWidget->setItem(rowIdx, 1, info_item);
+		ui.log_devs_tableWidget->setItem(rowIdx, 2, new QTableWidgetItem("0"));
+	}
+}
+
+void Ins401::onUpdateLogDevice(QString index_str)
+{
+	uint64_t index = index_str.toULongLong();
+	log_devices::iterator it = devices_manager::Instance().log_dev_list.find(index);
+	if (it != devices_manager::Instance().log_dev_list.end()) {
+		device_log_thread* log_thread = (device_log_thread*)it.value();
+		QTableWidgetItem *item = ui.devs_tableWidget->item(log_thread->get_ui_table_row(), col_info);
+		item->setText(log_thread->get_dev_info());
 	}
 }
 
@@ -253,10 +289,9 @@ void Ins401::onClearDevices()
 {
 	ui.devs_tableWidget->clearContents();
 	ui.devs_tableWidget->setRowCount(0);
-}
 
-void Ins401::onAddRowClicked()
-{
+	ui.log_devs_tableWidget->clearContents();
+	ui.log_devs_tableWidget->setRowCount(0);
 }
 
 void Ins401::onCheckAll(bool check)
@@ -318,6 +353,12 @@ void Ins401::onUpgradeStep(int row, QString upgrade_step)
 	ui.devs_tableWidget->item(row, col_upgrade)->setText(upgrade_step);
 }
 
+void Ins401::onShowLogSize(int row, int percent) {
+	if (row >= ui.log_devs_tableWidget->rowCount()) return;
+	ui.log_devs_tableWidget->item(row, 2)->setText(QString::number(percent));
+
+}
+
 void Ins401::onDebugCheck(bool check)
 {
 	ui.send_pushButton->setEnabled(check);
@@ -351,5 +392,10 @@ void Ins401::onDevsTableChanged(int row, int col)
 			check_devices();
 		}
 	}	
+}
+
+void Ins401::onLogCheck(bool check) {
+	devices_manager::Instance().log_flag = check;
+	devices_manager::Instance().start_log_threads();
 }
 

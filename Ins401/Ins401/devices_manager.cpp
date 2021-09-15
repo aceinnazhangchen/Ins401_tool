@@ -2,6 +2,7 @@
 #include <mutex>
 #include <QNetworkInterface>
 #include <QtEndian>
+#include <QDateTime>
 #include "common_function.h"
 
 devices_manager * devices_manager::m_instance = NULL;
@@ -12,17 +13,18 @@ devices_manager::devices_manager(QObject *parent)
 	, src_mac_num(0)
 	, filter_log_pak(true)
 	, filter_mac_flags(false)
+	, log_flag(false)
 {
 	pcap_thread = new pcap_loop_thread(this);
 	net_card_list.clear();
 	net_mac_list.clear();
-	dst_dev_list.clear();
+	upgrade_dev_list.clear();
 	select_dev_list.clear();
 	memset(src_mac, 0, MAC_ADDRESS_LEN);
 	sub_file_list.clear();
 	sub_file_list.append(sub_file_t("rtk_start:"));
 	sub_file_list.append(sub_file_t("ins_start:"));
-	sub_file_list.append(sub_file_t("sdk_start:"));
+	sub_file_list.append(sub_file_t("sdk_start:",false));
 	sub_file_list.append(sub_file_t("imu_start:"));
 }
 
@@ -139,8 +141,9 @@ void devices_manager::stop_listen()
 		pcap_thread->stop();
 		pcap_thread->wait();
 	}
+
 	upgrade_devices::iterator it;
-	for (it = dst_dev_list.begin(); it != dst_dev_list.end(); ++it) {
+	for (it = upgrade_dev_list.begin(); it != upgrade_dev_list.end(); ++it) {
 		device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 		if (upgrade_thread->isRunning()) {
 			upgrade_thread->stop();
@@ -148,7 +151,17 @@ void devices_manager::stop_listen()
 		}
 		delete upgrade_thread;
 	}
-	dst_dev_list.clear();
+	upgrade_dev_list.clear();
+
+	log_devices::iterator it_log;
+	for (it_log = log_dev_list.begin(); it_log != log_dev_list.end(); ++it_log) {
+		device_log_thread* log_thread = (device_log_thread*)it_log.value();
+		log_thread->stop();
+		log_thread->wait();
+		delete log_thread;
+	}
+	log_dev_list.clear();
+
 	emit sgnClearDevices();
 }
 
@@ -164,8 +177,8 @@ void devices_manager::debug_pack(int index)
 		upgrade_devices::iterator it;
 		for (int i = 0; i < select_dev_list.size(); i++) {
 			uint64_t dest_mac_num = select_dev_list[i];
-			upgrade_devices::iterator it = dst_dev_list.find(dest_mac_num);
-			if (it != dst_dev_list.end()) {
+			upgrade_devices::iterator it = upgrade_dev_list.find(dest_mac_num);
+			if (it != upgrade_dev_list.end()) {
 				device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 				switch (cmd)
 				{
@@ -275,8 +288,8 @@ void devices_manager::dispatch_pak(app_packet_t & pak)
 		uint64_t dest_mac_num = 0;
 		memcpy(&dest_mac_num, pak.src_mac, MAC_ADDRESS_LEN);
 		if (dest_mac_num != 0) {
-			upgrade_devices::iterator it = dst_dev_list.find(dest_mac_num);
-			if (it != dst_dev_list.end()) {
+			upgrade_devices::iterator it = upgrade_dev_list.find(dest_mac_num);
+			if (it != upgrade_dev_list.end()) {
 				device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 				upgrade_thread->recv_pack(pak.msg_load);
 			}
@@ -288,29 +301,63 @@ void devices_manager::dispatch_pak(app_packet_t & pak)
 void devices_manager::append_device(app_packet_t & pak)
 {
 	//run in pcap_loop_thread
+	append_upgrade_device(pak);
+	append_log_device(pak);
+}
+
+void devices_manager::append_upgrade_device(app_packet_t & pak)
+{
 	uint64_t dest_mac_num = 0;
 	memcpy(&dest_mac_num, pak.src_mac, MAC_ADDRESS_LEN);
 	if (dest_mac_num == 0) return;
-	upgrade_devices::iterator it = dst_dev_list.find(dest_mac_num);
-	if (it == dst_dev_list.end()) {
+	upgrade_devices::iterator it = upgrade_dev_list.find(dest_mac_num);
+	if (it == upgrade_dev_list.end()) {
 		device_upgrade_thread* upgrade_thread = new device_upgrade_thread(this);
 		upgrade_thread->set_dest_mac(pak.src_mac);
 		pak.msg_load.msg_data[pak.msg_load.msg_len] = 0;
 		upgrade_thread->set_dev_info((const char*)pak.msg_load.msg_data);
-		dst_dev_list.insert(dest_mac_num, upgrade_thread);
-		emit sgnAddDevice(QString::number(dest_mac_num));
+		upgrade_dev_list.insert(dest_mac_num, upgrade_thread);
+		emit sgnAddUpgradeDevice(QString::number(dest_mac_num));
 	}
 	else
 	{
 		uint64_t dest_mac_num = 0;
 		memcpy(&dest_mac_num, pak.src_mac, MAC_ADDRESS_LEN);
-		upgrade_devices::iterator it = dst_dev_list.find(dest_mac_num);
-		if (it != dst_dev_list.end()) {
+		upgrade_devices::iterator it = upgrade_dev_list.find(dest_mac_num);
+		if (it != upgrade_dev_list.end()) {
 			device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 			pak.msg_load.msg_data[pak.msg_load.msg_len] = 0;
 			upgrade_thread->recv_pack(pak.msg_load);
 			upgrade_thread->set_dev_info((const char*)pak.msg_load.msg_data);
-			emit sgnUpdateDevice(QString::number(dest_mac_num));
+			emit sgnUpdateLogDevice(QString::number(dest_mac_num));
+		}
+	}
+}
+
+void devices_manager::append_log_device(app_packet_t & pak)
+{
+	uint64_t dest_mac_num = 0;
+	memcpy(&dest_mac_num, pak.src_mac, MAC_ADDRESS_LEN);
+	if (dest_mac_num == 0) return;
+	log_devices::iterator it = log_dev_list.find(dest_mac_num);
+	if (it == log_dev_list.end()) {
+		device_log_thread* log_thread = new device_log_thread(this);
+		log_thread->set_dest_mac(pak.src_mac);
+		pak.msg_load.msg_data[pak.msg_load.msg_len] = 0;
+		log_thread->set_dev_info((const char*)pak.msg_load.msg_data);
+		log_dev_list.insert(dest_mac_num, log_thread);
+		emit sgnAddLogDevice(QString::number(dest_mac_num));
+	}
+	else
+	{
+		uint64_t dest_mac_num = 0;
+		memcpy(&dest_mac_num, pak.src_mac, MAC_ADDRESS_LEN);
+		log_devices::iterator it = log_dev_list.find(dest_mac_num);
+		if (it != log_dev_list.end()) {
+			device_log_thread* log_thread = (device_log_thread*)it.value();
+			pak.msg_load.msg_data[pak.msg_load.msg_len] = 0;
+			log_thread->set_dev_info((const char*)pak.msg_load.msg_data);
+			emit sgnUpdateLogDevice(QString::number(dest_mac_num));
 		}
 	}
 }
@@ -401,8 +448,8 @@ void devices_manager::upgrade()
 
 	for (int i = 0; i < select_dev_list.size(); i++) {
 		uint64_t dest_mac_num = select_dev_list[i];
-		upgrade_devices::iterator it = dst_dev_list.find(dest_mac_num);
-		if (it != dst_dev_list.end()) {
+		upgrade_devices::iterator it = upgrade_dev_list.find(dest_mac_num);
+		if (it != upgrade_dev_list.end()) {
 			device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 			upgrade_thread->start();
 		}
@@ -413,14 +460,59 @@ bool devices_manager::is_upgrading()
 {
 	bool ret = false;
 	upgrade_devices::iterator it;
-	for (it = dst_dev_list.begin(); it != dst_dev_list.end(); ++it) {
+	for (it = upgrade_dev_list.begin(); it != upgrade_dev_list.end(); ++it) {
 		device_upgrade_thread* upgrade_thread = (device_upgrade_thread*)it.value();
 		if (upgrade_thread->isRunning()) {
 			ret = true;
 			break;
-		}		
+		}
 	}
 	return ret;
+}
+
+void devices_manager::start_log_threads()
+{
+	if (log_flag) {
+		make_log_path();
+	}	
+	log_devices::iterator it;
+	for (it = log_dev_list.begin(); it != log_dev_list.end(); it++) {
+		device_log_thread* log_thread = (device_log_thread*)it.value();
+		if (log_flag) {
+			if (!log_thread->isRunning()) {
+				log_thread->start();
+			}
+		}
+		else {			
+			log_thread->stop();
+		}
+	}
+}
+
+void devices_manager::log_data(const uint8_t * data, uint32_t len)
+{
+	uint64_t dest_mac_num = 0;
+	uint8_t dev_mac[MAC_ADDRESS_LEN] = { 0 };
+	memcpy(dev_mac, data+ MAC_ADDRESS_LEN, MAC_ADDRESS_LEN);
+	memcpy(&dest_mac_num, dev_mac, MAC_ADDRESS_LEN);
+	log_devices::iterator it = log_dev_list.find(dest_mac_num);
+	if (it != log_dev_list.end()) {
+		device_log_thread* log_thread = (device_log_thread*)it.value();
+		if (log_thread->isRunning()) {
+			log_thread->log_data(data, len);
+		}
+	}
+}
+
+void devices_manager::make_log_path()
+{
+	QDateTime currentTime = QDateTime::currentDateTime();
+	QString strData = currentTime.toString("yyyy-MM-dd_hh-mm-ss");
+	//./Data/ins401_yyyy-MM-dd_hh-mm-ss/
+	log_path = (QDir::currentPath() + QDir::separator() + "Data" + QDir::separator() + "ins401_" + strData + QDir::separator());
+	if (!log_path.exists()) {
+		log_path.mkpath(log_path.absolutePath());
+	}
 }
 
 void devices_manager::broadcast_get_version_cmd()

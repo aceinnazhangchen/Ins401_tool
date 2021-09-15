@@ -1,6 +1,9 @@
 #include "Ins401.h"
 #include <QtWidgets/QApplication>
 
+#define PROGRAM "Ins401"
+#define VERSION "v1.2.1"
+
 #include <pcap.h>
 #ifdef _WIN32
 #include <tchar.h>
@@ -34,6 +37,7 @@ int main(int argc, char *argv[])
 #endif
     QApplication a(argc, argv);
     Ins401 w;
+	w.setWindowTitle(PROGRAM + QString("-") + VERSION);
     w.show();
     return a.exec();
 }

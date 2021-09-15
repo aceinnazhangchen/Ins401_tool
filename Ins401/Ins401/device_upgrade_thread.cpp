@@ -16,8 +16,7 @@ device_upgrade_thread::device_upgrade_thread(QObject *parent)
 	: QThread(parent)
 	, m_isStop(false)
 	, m_isRestarting(false)
-	, m_send_sdk_count(0)
-	, m_recv_sdk_count(0)
+	, m_wait_recv_count(0)
 	, dest_mac_num(0)
 	, dev_cmd_status(0)
 	, ui_table_row(0)
@@ -38,6 +37,7 @@ device_upgrade_thread::~device_upgrade_thread()
 
 void device_upgrade_thread::run() 
 {
+	m_isStop = false;
 	QList <sub_file_t>& sub_file_list = devices_manager::Instance().sub_file_list;
 	if (sub_file_list[upgrade_rtk].file_switch ||
 		sub_file_list[upgrade_ins].file_switch){
@@ -103,7 +103,8 @@ void device_upgrade_thread::filled_SDK_bin_info()
 	int read_len = 0;
 	crc32 = calc_crc32(crc32, (uint8_t*)&STA9100BinInfo.binSize, 4);
 	while (read_len < file_size) {
-		QByteArray send_bytes = file_content.mid(file_offset_addr, 100);
+		QByteArray send_bytes = file_content.mid(read_len, 100);
+		crc32 = calc_crc32(crc32, (uint8_t*)send_bytes.data(), send_bytes.size());
 		read_len += send_bytes.size();
 	}
 	STA9100BinInfo.crc = crc32;
@@ -139,7 +140,9 @@ void device_upgrade_thread::recv_pack(msg_packet_t & msg_pak)
 	{
 		mutex.lock();
 		dev_cmd_status = msg_pak.msg_type;
-		m_recv_sdk_count = m_send_sdk_count;
+		if (m_wait_recv_count > 0) {
+			m_wait_recv_count--;
+		}		
 		emit devices_manager::Instance().sgnLog(QString::asprintf("reveive SDK size: %d ret[0]: 0x%2x", msg_pak.msg_len, msg_pak.msg_data[0]));
 		cond_wait.wakeAll();
 		mutex.unlock();
@@ -164,6 +167,7 @@ void device_upgrade_thread::send_get_version_cmd()
 	app_packet_t pak = { 0 };
 	devices_manager::Instance().make_pack(pak, IAP_CMD_GV, 0, NULL);
 	memcpy(pak.dest_mac, dest_mac, MAC_ADDRESS_LEN);
+	//for (int i = 0; i < MAC_ADDRESS_LEN; i++)pak.dest_mac[i] = 0xff;
 	devices_manager::Instance().send_pack(pak);
 }
 
@@ -275,8 +279,10 @@ void device_upgrade_thread::send_SDK_boot_pre_info()
 	crc32 = calc_crc32(crc32, pStaLoader, STA9100LoadSize);
 	devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&crc32);
 	devices_manager::Instance().send_pack(pak);
+	QThread::usleep(100);
 	devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&STA9100LoadSize);
 	devices_manager::Instance().send_pack(pak);
+	QThread::usleep(100);
 	devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&BootStartAddr);
 	devices_manager::Instance().send_pack(pak);	
 }
@@ -294,7 +300,7 @@ void device_upgrade_thread::send_SDK_boot_info()
 		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, pack_len, &STA9100_Loader[bffer_current]);
 		devices_manager::Instance().send_pack(pak);
 		bffer_current += pack_len;
-		QThread::usleep(10);
+		QThread::usleep(100);
 	}
 }
 
@@ -503,86 +509,91 @@ void device_upgrade_thread::step_SDK_sync()
 void device_upgrade_thread::step_SDK_set_baudrate()
 {
 	//send change baudrate
-	send_SDK_change_baudrate();
-	m_send_sdk_count++;
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send change baudrate."));
+	send_SDK_change_baudrate();
+	m_wait_recv_count = 1;
 	mutex.lock();
-	while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
+	while (m_wait_recv_count > 0 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc change baudrate."));
+	QThread::msleep(1);
 	//send set baudrate
-	send_SDK_set_baudrate();
-	m_send_sdk_count++;
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send set baudrate."));
+	send_SDK_set_baudrate();
+	m_wait_recv_count = 1;
 	mutex.lock();
-	while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
+	while (m_wait_recv_count > 0 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc set baudrate."));
+	QThread::msleep(1);
 	//send check baudrate
-	send_SDK_check_baudrate();
-	m_send_sdk_count++;
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send check baudrate."));
+	send_SDK_check_baudrate();
+	m_wait_recv_count = 1;
 	mutex.lock();
-	while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
+	while (m_wait_recv_count > 0 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc check baudrate."));
+	QThread::msleep(1);
 	//send check ready
-	send_SDK_check_ready();
-	m_send_sdk_count++;
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send check ready."));
+	send_SDK_check_ready();
+	m_wait_recv_count = 1;
 	mutex.lock();
-	while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
+	while (m_wait_recv_count > 0 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc check ready."));
+	QThread::msleep(1);
 }
 
 void device_upgrade_thread::step_SDK_send_loader()
 {
-	send_SDK_boot_pre_info();
-	send_SDK_boot_info();
-	m_send_sdk_count++;
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send boot info."));
+	send_SDK_boot_pre_info();
+	QThread::msleep(1);
+	send_SDK_boot_info();
+	m_wait_recv_count = 1;
 	mutex.lock();
-	while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
+	while (m_wait_recv_count > 0 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
+	QThread::usleep(100);
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc boot info."));
 }
 
 void device_upgrade_thread::step_SDK_start_write()
 {
-	send_SDK_erase_cmd();
-	m_send_sdk_count++;
+	//send erase cmd.
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send erase cmd."));
+	send_SDK_erase_cmd();
+	m_wait_recv_count = 1;
 	mutex.lock();
-	while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
+	while (m_wait_recv_count > 0 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc erase cmd."));
-
+	QThread::sleep(5);
+	//send start write
 	filled_SDK_bin_info();
-
-	send_SDK_bin_info();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send start write."));
-	for (int i = 0; i < 3; i++) {//receive 4  times
-		m_send_sdk_count++;		
-		mutex.lock();
-		while (m_send_sdk_count != m_recv_sdk_count && !m_isStop) {
-			cond_wait.wait(&mutex);
-		}
-		mutex.unlock();
-		emit devices_manager::Instance().sgnLog(QString::asprintf("revc start write."));
+	send_SDK_bin_info();
+	m_wait_recv_count = 4;
+	mutex.lock();
+	while (m_wait_recv_count > 0 && !m_isStop) {
+		cond_wait.wait(&mutex);
+		emit devices_manager::Instance().sgnLog(QString::asprintf("revc start write %d.", m_wait_recv_count));
 	}
+	mutex.unlock();
 }
 
 void device_upgrade_thread::step_SDK_write_file()
@@ -591,16 +602,30 @@ void device_upgrade_thread::step_SDK_write_file()
 	emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "Writting");
 	QByteArray& file_content = devices_manager::Instance().sub_file_list[upgrade_step].file_content;
 	int file_size = file_content.size();
+	int loop_count = 0;
 	while (file_offset_addr < file_size) {
 		if (m_isStop)break;
 		send_SDK_file(SDK_CMD_SENDSDK);
-		m_send_sdk_count++;
-		mutex.lock();
-		if (m_recv_sdk_count != m_send_sdk_count && !m_isStop) {
-			cond_wait.wait(&mutex,50);
+		QThread::msleep(10);
+		loop_count++;
+		if (loop_count == 5) {
+			loop_count = 0;
+			mutex.lock();
+			m_wait_recv_count = 1;
+			if (m_wait_recv_count > 0 && !m_isStop) {
+				cond_wait.wait(&mutex);
+			}
+			mutex.unlock();
+			QThread::msleep(1);
 		}
-		mutex.unlock();
 	}
+	m_wait_recv_count = 1;
+	QThread::sleep(2);
+	mutex.lock();
+	if (m_wait_recv_count > 0 && !m_isStop) {
+		cond_wait.wait(&mutex);
+	}
+	mutex.unlock();
 }
 
 void device_upgrade_thread::step_IMU_jump_JI()
@@ -688,10 +713,15 @@ bool device_upgrade_thread::upgrade_sdk_process()
 	step_SDK_sync();
 	for (int i = 0; i < 5; i++) {
 		send_SDK_file(SDK_CMD_SENDJL);
-	}	
+		QThread::msleep(10);
+	}
+	QThread::sleep(4);
 	step_SDK_set_baudrate();
+	QThread::sleep(1);
 	step_SDK_send_loader();
+	QThread::sleep(5);
 	step_SDK_start_write();
+	QThread::sleep(2);
 	step_SDK_write_file();
 	step_SDK_jump_JG();
 	return true;

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>909</width>
-    <height>531</height>
+    <width>827</width>
+    <height>668</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,1,0">
+     <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,1,0">
       <item>
        <widget class="QComboBox" name="devs_comboBox"/>
       </item>
@@ -33,126 +33,175 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_5">
-      <item>
-       <widget class="QCheckBox" name="rtk_checkBox">
-        <property name="text">
-         <string>rtk</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="ins_checkBox">
-        <property name="text">
-         <string>ins</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="sdk_checkBox">
-        <property name="text">
-         <string>sdk</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="imu_checkBox">
-        <property name="text">
-         <string>imu</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_5">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>file:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLineEdit" name="file_lineEdit"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="select_pushButton">
-        <property name="text">
-         <string>Select</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QTableWidget" name="devs_tableWidget">
-      <property name="editTriggers">
-       <set>QAbstractItemView::NoEditTriggers</set>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
       </property>
-      <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
-      </property>
-      <column>
-       <property name="text">
-        <string/>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>mac</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>info</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>mode</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>status</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>upgrade</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>process</string>
-       </property>
-      </column>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Upgrade</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>file:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="file_lineEdit"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="select_pushButton">
+            <property name="text">
+             <string>Select</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QCheckBox" name="rtk_checkBox">
+            <property name="text">
+             <string>rtk</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="ins_checkBox">
+            <property name="text">
+             <string>ins</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="sdk_checkBox">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>st9100</string>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="imu_checkBox">
+            <property name="text">
+             <string>imu</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_5">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QTableWidget" name="devs_tableWidget">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string/>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>mac</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>info</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>mode</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>status</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>upgrade</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>process</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Log</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QTableWidget" name="log_devs_tableWidget">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="selectionBehavior">
+           <enum>QAbstractItemView::SelectRows</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>mac</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>info</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>data</string>
+           </property>
+          </column>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
@@ -171,13 +220,6 @@
        </spacer>
       </item>
       <item>
-       <widget class="QPushButton" name="add_row_pushButton">
-        <property name="text">
-         <string>add row</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <widget class="QPushButton" name="search_pushButton">
         <property name="text">
          <string>search</string>
@@ -192,81 +234,17 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_4">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QPlainTextEdit" name="log_plainTextEdit"/>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
-      <item>
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="debug_checkBox">
+       <widget class="QCheckBox" name="log_checkBox">
         <property name="text">
-         <string>Debug:</string>
+         <string>log files</string>
         </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="cmd_comboBox"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="send_pushButton">
-        <property name="enabled">
+        <property name="tristate">
          <bool>false</bool>
         </property>
-        <property name="text">
-         <string>send</string>
-        </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="clear_pushButton">
-        <property name="text">
-         <string>clear</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="filter_checkBox">
-        <property name="text">
-         <string>filter</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QCheckBox" name="filter_mac_checkBox">
-        <property name="text">
-         <string>filter mac</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
+       <spacer name="horizontalSpacer_4">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
@@ -287,8 +265,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>909</width>
-     <height>30</height>
+     <width>827</width>
+     <height>23</height>
     </rect>
    </property>
   </widget>
@@ -301,6 +279,95 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QDockWidget" name="log_dockWidget">
+   <property name="windowTitle">
+    <string>log</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <widget class="QPlainTextEdit" name="log_plainTextEdit"/>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="debug_checkBox">
+         <property name="text">
+          <string>Debug:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="cmd_comboBox"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="send_pushButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>send</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="clear_pushButton">
+         <property name="text">
+          <string>clear</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="filter_checkBox">
+         <property name="text">
+          <string>filter log</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="filter_mac_checkBox">
+         <property name="text">
+          <string>filter mac</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>

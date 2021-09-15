@@ -100,6 +100,9 @@ void pcap_loop_thread::recv_pack(pcap_pkthdr* header, const u_char* buffer)
 	strftime(timestr, sizeof timestr, "%H:%M:%S", ltime);
 
 	if (header->len > MAC_ADDRESS_LEN*2){
+		if (devices_manager::Instance().log_flag) {
+			devices_manager::Instance().log_data((const uint8_t*)buffer, header->len);
+		}
 		app_packet_t pak = { 0 };
 		memcpy(&pak, buffer, header->len);
 		devices_manager::Instance().pack_from_little_endian(pak);

@@ -123,6 +123,7 @@ void Ins401::check_devices()
 		}
 	}
 }
+
 void Ins401::check_file()
 {
 	devices_manager::Instance().sub_file_list[upgrade_rtk].file_switch = ui.rtk_checkBox->isChecked();

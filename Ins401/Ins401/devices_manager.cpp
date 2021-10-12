@@ -368,7 +368,7 @@ void devices_manager::make_pack(app_packet_t & pak, uint16_t ntype, uint32_t nle
 	pak.msg_load.msg_head = PACKET_MSG_HEADER;
 	pak.msg_load.msg_type = ntype;
 	pak.msg_load.msg_len = nlen;
-	if (nlen > 0 || buffer == NULL) {
+	if (nlen > 0 || buffer != NULL) {
 		memcpy(pak.msg_load.msg_data, buffer, nlen);
 	}
 	uint16_t crc_calc = calc_crc((uint8_t*)&pak.msg_load.msg_type, nlen + 6);//6 = msg_type(2) + msg_len(4)

@@ -81,4 +81,5 @@ private:
 	int32_t ui_table_row;
 	emUpgradeStep upgrade_step;
 	stSTA9100BinInfo STA9100BinInfo;
+	uint8_t sta9100_last_recv_code;
 };

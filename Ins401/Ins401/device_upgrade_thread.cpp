@@ -19,10 +19,11 @@ device_upgrade_thread::device_upgrade_thread(QObject *parent)
 	, m_wait_recv_count(0)
 	, dest_mac_num(0)
 	, dev_cmd_status(0)
-	, ui_table_row(0)
+	, ui_table_row(-1)
 	, file_offset_addr(0)
 	, ret_file_offset_addr(0)
 	, upgrade_step(upgrade_rtk)
+	, sta9100_last_recv_code(0)
 {
 	memset(&STA9100BinInfo, 0, sizeof(STA9100BinInfo));
 	STA9100BinInfo.bootMode = 0x01;
@@ -38,17 +39,19 @@ device_upgrade_thread::~device_upgrade_thread()
 void device_upgrade_thread::run() 
 {
 	m_isStop = false;
-	QList <sub_file_t>& sub_file_list = devices_manager::Instance().sub_file_list;
-	if (sub_file_list[upgrade_rtk].file_switch ||
-		sub_file_list[upgrade_ins].file_switch){
-		upgrade_app_process();
-	}
-	if (sub_file_list[upgrade_sdk].file_switch) {
-		upgrade_sdk_process();
-	}
-	if (sub_file_list[upgrade_imu].file_switch) {
-		upgrade_imu_process();
-	}
+	do {
+		QList <sub_file_t>& sub_file_list = devices_manager::Instance().sub_file_list;
+		if (sub_file_list[upgrade_rtk].file_switch ||
+			sub_file_list[upgrade_ins].file_switch) {
+			upgrade_app_process();
+		}
+		if (sub_file_list[upgrade_sdk].file_switch) {
+			if (upgrade_sdk_process() == false) { break; }
+		}
+		if (sub_file_list[upgrade_imu].file_switch) {
+			upgrade_imu_process();
+		}
+	} while (false);
 	//finished
 	emit devices_manager::Instance().sgnLog(QString::asprintf("The file is finished."));
 	emit devices_manager::Instance().sgnThreadFinished();
@@ -143,7 +146,8 @@ void device_upgrade_thread::recv_pack(msg_packet_t & msg_pak)
 		if (m_wait_recv_count > 0) {
 			m_wait_recv_count--;
 		}		
-		emit devices_manager::Instance().sgnLog(QString::asprintf("reveive SDK size: %d ret[0]: 0x%2x", msg_pak.msg_len, msg_pak.msg_data[0]));
+		sta9100_last_recv_code = msg_pak.msg_data[0];
+		emit devices_manager::Instance().sgnLog(QString::asprintf("reveive SDK size: %d ret[0]: 0x%2x", msg_pak.msg_len, sta9100_last_recv_code));
 		cond_wait.wakeAll();
 		mutex.unlock();
 	}break;
@@ -446,7 +450,7 @@ void device_upgrade_thread::step_IAP_write_CS() {
 
 void device_upgrade_thread::step_IAP_write_file()
 {
-	if (upgrade_step > upgrade_all) return;
+	if (upgrade_step > upgrade_ins) return;
 	emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "Writting");
 	QByteArray& file_content = devices_manager::Instance().sub_file_list[upgrade_step].file_content;
 	int file_size = file_content.size();
@@ -724,7 +728,14 @@ bool device_upgrade_thread::upgrade_sdk_process()
 	QThread::sleep(2);
 	step_SDK_write_file();
 	step_SDK_jump_JG();
-	return true;
+	if (sta9100_last_recv_code == 0xcc) {
+		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "success");
+		return true;
+	}
+	else {
+		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "falied");
+		return false;
+	}
 }
 
 bool device_upgrade_thread::upgrade_imu_process()

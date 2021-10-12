@@ -103,11 +103,3 @@ int get_file_size(FILE* file)
 	fseek(file, 0L, SEEK_SET);
 	return file_size;
 }
-
-void byte_order_conv(uint32_t num, uint8_t * buffer)
-{
-	buffer[0] = (num >> 24) & 0xff;
-	buffer[1] = (num >> 16) & 0xff;
-	buffer[2] = (num >> 8) & 0xff;
-	buffer[3] = (num >> 0) & 0xff;
-}

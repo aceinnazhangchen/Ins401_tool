@@ -31,7 +31,7 @@ void device_log_thread::run()
 			cond_wait.wait(&mutex);
 		}
 		log_file.write(log_byte_aray);
-		log_size += log_file.size();
+		log_size += log_byte_aray.size();
 		emit devices_manager::Instance().sgnLogSize(ui_table_row, log_size);
 		log_byte_aray.clear();
 		mutex.unlock();

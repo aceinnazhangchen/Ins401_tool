@@ -3,6 +3,26 @@
 #include <QNetworkInterface>
 #include "devices_manager.h"
 #include <QProgressBar>
+#include "ConfigFile.h"
+
+#define KB 1024
+
+QString FormatBytes(int byte) {
+	QString number_str;
+	double number = 0;;
+	if (byte < KB) {
+		number_str = QString::number(byte) + "B";
+	}
+	else if (byte >= KB && byte <= KB * KB) {
+		number = double(byte) / KB;
+		number_str = QString::number(number, 'f', 2) + "K";
+	}
+	else if (byte >= KB * KB && byte <= KB * KB * KB) {
+		number = double(byte) / (KB * KB);
+		number_str = QString::number(number, 'f', 4) + "M";
+	}
+	return number_str;
+}
 
 enum upgrade_table_column {
 	col_check,
@@ -31,6 +51,9 @@ Ins401::Ins401(QWidget *parent)
 	connect(ui.upgrade_pushButton, SIGNAL(clicked()), this, SLOT(onUpgradeClicked()));
 	connect(ui.send_pushButton, SIGNAL(clicked()), this, SLOT(onSendClicked()));
 	connect(ui.clear_pushButton, SIGNAL(clicked()), this, SLOT(onClearClicked()));
+	connect(ui.save_pushButton, SIGNAL(clicked()), this, SLOT(onSaveClicked()));	
+	connect(ui.connect_pushButton, SIGNAL(clicked()), this, SLOT(onConnectClicked()));
+
 	connect(ui.debug_checkBox, SIGNAL(toggled(bool)), this, SLOT(onDebugCheck(bool)));
 	connect(ui.filter_checkBox, SIGNAL(toggled(bool)), this, SLOT(onFilterCheck(bool)));
 	connect(ui.filter_mac_checkBox, SIGNAL(toggled(bool)), this, SLOT(onFilterMacCheck(bool)));
@@ -50,6 +73,8 @@ Ins401::Ins401(QWidget *parent)
 	connect(&devices_manager::Instance(), SIGNAL(sgnUpgradeStep(int, QString)), this, SLOT(onUpgradeStep(int, QString)), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnLogSize(int, int)), this, SLOT(onShowLogSize(int, int)), Qt::QueuedConnection);
 	connect(&devices_manager::Instance(), SIGNAL(sgnThreadFinished()), this, SLOT(onCheckUpgradeFinished()), Qt::QueuedConnection);
+	connect(&devices_manager::Instance(), SIGNAL(sgnEnableBaseStationUI(bool)), this, SLOT(onEnableBaseStationUI(bool)));
+	connect(&devices_manager::Instance(), SIGNAL(sgnBaseStationDataSize(int)), this, SLOT(onBaseStationDataSize(int)));
 
 	ui.devs_tableWidget->horizontalHeader()->setStretchLastSection(true);
 	ui.devs_tableWidget->setColumnWidth(0, 25);
@@ -61,6 +86,12 @@ Ins401::Ins401(QWidget *parent)
 	for (int i = 0; i < 3; i++) {
 		ui.log_devs_tableWidget->horizontalHeader()->setSectionResizeMode(i, QHeaderView::ResizeToContents);
 	}
+
+	loadConfig();
+
+	chart_test = new QtCharts_Test();
+	chart_test->hide();
+	connect(ui.chart_pushButton, SIGNAL(clicked()), this, SLOT(onChartClicked()));
 }
 
 Ins401::~Ins401()
@@ -97,6 +128,85 @@ void Ins401::search_macs()
 void Ins401::onLog(QString log)
 {
 	ui.log_plainTextEdit->appendPlainText(log);
+}
+
+void Ins401::saveConfig()
+{
+	QJsonObject& configJson = ConfigFile::getInstance()->getConfig();
+	writeListConfig(configJson);
+	QJsonObject base;
+	writeConfig(base);
+	configJson.insert("base", base);
+	ConfigFile::getInstance()->writeConfigFile();
+	onLog("save config success!");
+}
+
+void Ins401::loadConfig()
+{
+	QJsonObject& configJson = ConfigFile::getInstance()->getConfig();
+	readListConfig(configJson);
+	if (configJson["base"].isObject())
+	{
+		QJsonObject base = configJson["base"].toObject();
+		readConfig(base);
+	}
+}
+
+void Ins401::readListConfig(QJsonObject & config)
+{
+	QJsonArray& hostArray = config["hostlist"].toArray();
+	for (int i = 0; i < hostArray.size(); i++) {
+		if (hostArray[i].toString().isEmpty()) continue;
+		ui.host_cmb->addItem(hostArray[i].toString());
+	}
+	QJsonArray& portArray = config["portlist"].toArray();
+	for (int i = 0; i < portArray.size(); i++) {
+		if (portArray[i].toString().isEmpty()) continue;
+		ui.port_cmb->addItem(portArray[i].toString());
+	}
+	QJsonArray& mountArray = config["mountlist"].toArray();
+	for (int i = 0; i < mountArray.size(); i++) {
+		if (mountArray[i].toString().isEmpty()) continue;
+		ui.mountpoint_cmb->addItem(mountArray[i].toString());
+	}
+	QJsonArray& userArray = config["userlist"].toArray();
+	for (int i = 0; i < userArray.size(); i++) {
+		if (userArray[i].toString().isEmpty()) continue;
+		ui.user_cmb->addItem(userArray[i].toString());
+	}
+	QJsonArray& passwordArray = config["passwordlist"].toArray();
+	for (int i = 0; i < passwordArray.size(); i++) {
+		if (passwordArray[i].toString().isEmpty()) continue;
+		ui.password_cmb->addItem(passwordArray[i].toString());
+	}
+}
+void Ins401::writeListConfig(QJsonObject & config)
+{
+	QJsonArray& hostArray = config["hostlist"].toArray();
+	if (!hostArray.contains(ui.host_cmb->currentText().trimmed())) {
+		hostArray.append(ui.host_cmb->currentText().trimmed());
+		config.insert("hostlist", hostArray);
+	}
+	QJsonArray& portArray = config["portlist"].toArray();
+	if (!portArray.contains(ui.port_cmb->currentText().trimmed())) {
+		portArray.append(ui.port_cmb->currentText().trimmed());
+		config.insert("portlist", portArray);
+	}
+	QJsonArray& mountArray = config["mountlist"].toArray();
+	if (!mountArray.contains(ui.mountpoint_cmb->currentText().trimmed())) {
+		mountArray.append(ui.mountpoint_cmb->currentText().trimmed());
+		config.insert("mountlist", mountArray);
+	}
+	QJsonArray& userArray = config["userlist"].toArray();
+	if (!userArray.contains(ui.user_cmb->currentText().trimmed())) {
+		userArray.append(ui.user_cmb->currentText().trimmed());
+		config.insert("userlist", userArray);
+	}
+	QJsonArray& passwordArray = config["passwordlist"].toArray();
+	if (!passwordArray.contains(ui.password_cmb->currentText().trimmed())) {
+		passwordArray.append(ui.password_cmb->currentText().trimmed());
+		config.insert("passwordlist", passwordArray);
+	}
 }
 
 void Ins401::dragEnterEvent(QDragEnterEvent * event)
@@ -143,6 +253,24 @@ void Ins401::upgrade_ui_set(bool enable)
 	//ui.ins_checkBox->setEnabled(enable);
 	//ui.sdk_checkBox->setEnabled(enable);
 	//ui.imu_checkBox->setEnabled(enable);
+}
+
+void Ins401::readConfig(QJsonObject & config)
+{
+	ui.host_cmb->setEditText(config["host"].toString().trimmed());
+	ui.port_cmb->setEditText(config["port"].toString().trimmed());
+	ui.mountpoint_cmb->setEditText(config["mountpoint"].toString().trimmed());
+	ui.user_cmb->setEditText(config["username"].toString().trimmed());
+	ui.password_cmb->setEditText(config["password"].toString().trimmed());
+}
+
+void Ins401::writeConfig(QJsonObject & config)
+{
+	config.insert("host", ui.host_cmb->currentText().trimmed());
+	config.insert("port", ui.port_cmb->currentText().trimmed());
+	config.insert("mountpoint", ui.mountpoint_cmb->currentText().trimmed());
+	config.insert("username", ui.user_cmb->currentText().trimmed());
+	config.insert("password", ui.password_cmb->currentText().trimmed());
 }
 
 void Ins401::onListenClicked()
@@ -197,6 +325,22 @@ void Ins401::onSendClicked()
 void Ins401::onClearClicked()
 {
 	ui.log_plainTextEdit->clear();
+}
+
+void Ins401::onSaveClicked()
+{
+	saveConfig();
+}
+
+void Ins401::onConnectClicked()
+{
+	QString host = ui.host_cmb->currentText();
+	int port = ui.port_cmb->currentText().toInt();
+	QString mount_point = ui.mountpoint_cmb->currentText();
+	QString user = ui.user_cmb->currentText();
+	QString password = ui.password_cmb->currentText();
+	devices_manager::Instance().connect_base_station(host, port, mount_point, user, password);
+	saveConfig();
 }
 
 void Ins401::onUpgradeClicked()
@@ -354,10 +498,10 @@ void Ins401::onUpgradeStep(int row, QString upgrade_step)
 	ui.devs_tableWidget->item(row, col_upgrade)->setText(upgrade_step);
 }
 
-void Ins401::onShowLogSize(int row, int percent) {
+void Ins401::onShowLogSize(int row, int data_size) {
 	if (row >= ui.log_devs_tableWidget->rowCount()) return;
-	ui.log_devs_tableWidget->item(row, 2)->setText(QString::number(percent));
-
+	QString size_str = FormatBytes(data_size);
+	ui.log_devs_tableWidget->item(row, 2)->setText(size_str);
 }
 
 void Ins401::onDebugCheck(bool check)
@@ -398,5 +542,21 @@ void Ins401::onDevsTableChanged(int row, int col)
 void Ins401::onLogCheck(bool check) {
 	devices_manager::Instance().log_flag = check;
 	devices_manager::Instance().start_log_threads();
+}
+
+void Ins401::onChartClicked()
+{
+	chart_test->show();
+}
+
+void Ins401::onEnableBaseStationUI(bool enable)
+{
+	ui.base_groupBox->setEnabled(enable);
+}
+
+void Ins401::onBaseStationDataSize(int data_size)
+{
+	QString size_str = FormatBytes(data_size);
+	ui.data_label->setText(size_str);
 }
 

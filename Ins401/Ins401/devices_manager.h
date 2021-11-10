@@ -9,6 +9,7 @@
 #include "pcap_loop_thread.h"
 #include "device_upgrade_thread.h"
 #include "device_log_thread.h"
+#include "NtripClient.h"
 
 struct net_mac_t {
 	QString name_str;
@@ -79,6 +80,7 @@ public:
 	void start_log_threads();
 	void log_data(const uint8_t* data, uint32_t len);
 	void make_log_path();
+	void connect_base_station(QString host,int port,QString mount_point,QString user,QString password);
 private:
 	pcap_loop_thread* pcap_thread;
 	uint8_t		src_mac[MAC_ADDRESS_LEN];
@@ -96,6 +98,7 @@ public:
 	bool		filter_mac_flags;
 	bool		log_flag;
 	QDir		log_path;
+	NtripClient* base_ntrip;
 signals:
 	void sgnLog(QString log);
 	void sgnAddUpgradeDevice(QString index);
@@ -109,4 +112,6 @@ signals:
 	void sgnUpgradeStep(int row, QString upgrade_step);
 	void sgnLogSize(int row, int data_size);
 	void sgnThreadFinished();
+	void sgnEnableBaseStationUI(bool enable);
+	void sgnBaseStationDataSize(int data_size);
 };

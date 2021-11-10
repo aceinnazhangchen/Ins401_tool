@@ -61,6 +61,18 @@
     <ClCompile Include="device_log_thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="QtCharts_Test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Seriesline_Chart.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NtripClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pcap_loop_thread.h">
@@ -78,6 +90,18 @@
     <QtMoc Include="device_log_thread.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="QtCharts_Test.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="Seriesline_Chart.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ConfigFile.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="NtripClient.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common_define.h">
@@ -86,5 +110,13 @@
     <ClInclude Include="common_function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <QtUic Include="QtCharts_Test.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="Seriesline_Chart.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
   </ItemGroup>
 </Project>

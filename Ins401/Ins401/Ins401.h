@@ -9,6 +9,7 @@
 #include <QDropEvent>
 #include <QMimeData>
 #include "SCheckBoxHeaderView.h"
+#include "QtCharts_Test.h"
 
 class Ins401 : public QMainWindow
 {
@@ -20,12 +21,18 @@ public:
 	void init_cmd();
 	void search_devs();
 	void search_macs();
+	void saveConfig();
+	void loadConfig();
 protected:
 	void dragEnterEvent(QDragEnterEvent * event);
 	void dropEvent(QDropEvent * event);
 	void check_devices();
 	void check_file();
 	void upgrade_ui_set(bool enable);
+	void readConfig(QJsonObject & config);
+	void writeConfig(QJsonObject & config);
+	void readListConfig(QJsonObject & config);
+	void writeListConfig(QJsonObject & config);
 public slots:
 	void onLog(QString log);
 	void onListenClicked();
@@ -33,6 +40,8 @@ public slots:
 	void onSearchClicked();
 	void onSendClicked();
 	void onClearClicked();
+	void onSaveClicked();
+	void onConnectClicked();
 	void onUpgradeClicked();
 	void onAddUpgradeDevice(QString index_str);
 	void onUpdateUpgradeDevice(QString index_str);
@@ -51,7 +60,11 @@ public slots:
 	void onCheckUpgradeFinished();
 	void onDevsTableChanged(int row, int col);
 	void onLogCheck(bool check);
+	void onChartClicked();
+	void onEnableBaseStationUI(bool enable);
+	void onBaseStationDataSize(int data_size);
 private:
     Ui::Ins401Class ui;
 	SCheckBoxHeaderView* m_checkHeader;
+	QtCharts_Test* chart_test;
 };

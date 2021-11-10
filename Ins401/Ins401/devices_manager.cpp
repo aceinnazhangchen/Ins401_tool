@@ -26,6 +26,8 @@ devices_manager::devices_manager(QObject *parent)
 	sub_file_list.append(sub_file_t("ins_start:"));
 	sub_file_list.append(sub_file_t("sdk_start:",false));
 	sub_file_list.append(sub_file_t("imu_start:"));
+
+	base_ntrip = new NtripClient(this);
 }
 
 devices_manager::~devices_manager()
@@ -385,7 +387,7 @@ void devices_manager::pack_to_little_endian(app_packet_t & pak)
 
 void devices_manager::pack_from_little_endian(app_packet_t & pak)
 {
-	pak.load_len = qFromLittleEndian<uint32_t>(pak.load_len);
+	pak.load_len = qFromBigEndian<uint32_t>(pak.load_len);
 	pak.msg_load.msg_type = qFromLittleEndian<uint32_t>(pak.msg_load.msg_type);
 	pak.msg_load.msg_len = qFromLittleEndian<uint32_t>(pak.msg_load.msg_len);
 }
@@ -513,6 +515,16 @@ void devices_manager::make_log_path()
 	if (!log_path.exists()) {
 		log_path.mkpath(log_path.absolutePath());
 	}
+}
+
+void devices_manager::connect_base_station(QString host, int port, QString mount_point, QString user, QString password)
+{
+	base_ntrip->m_strIp = host;
+	base_ntrip->m_nPort = port;
+	base_ntrip->m_sMountPoint = mount_point;
+	base_ntrip->m_sUserName = user;
+	base_ntrip->m_sPassword = password;
+	base_ntrip->open();
 }
 
 void devices_manager::broadcast_get_version_cmd()

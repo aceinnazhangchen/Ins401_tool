@@ -32,12 +32,12 @@
   </ImportGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="QtSettings">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;gui;network;widgets</QtModules>
+    <QtModules>charts;core;gui;network;widgets</QtModules>
     <QtBuildConfig>debug</QtBuildConfig>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'" Label="QtSettings">
     <QtInstall>msvc2017_64</QtInstall>
-    <QtModules>core;gui;network;widgets</QtModules>
+    <QtModules>charts;core;gui;network;widgets</QtModules>
     <QtBuildConfig>release</QtBuildConfig>
   </PropertyGroup>
   <Target Name="QtMsBuildNotFound" BeforeTargets="CustomBuild;ClCompile" Condition="!Exists('$(QtMsBuild)\qt.targets') or !Exists('$(QtMsBuild)\qt.props')">
@@ -106,17 +106,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="common_function.c" />
+    <ClCompile Include="ConfigFile.cpp" />
     <ClCompile Include="device_log_thread.cpp" />
     <ClCompile Include="device_upgrade_thread.cpp" />
+    <ClCompile Include="NtripClient.cpp" />
     <ClCompile Include="pcap_loop_thread.cpp" />
     <ClCompile Include="devices_manager.cpp" />
+    <ClCompile Include="QtCharts_Test.cpp" />
     <ClCompile Include="SCheckBoxHeaderView.cpp" />
+    <ClCompile Include="Seriesline_Chart.cpp" />
     <ClCompile Include="sta9100.cpp" />
     <QtRcc Include="Ins401.qrc" />
     <QtUic Include="Ins401.ui" />
     <QtMoc Include="Ins401.h" />
     <ClCompile Include="Ins401.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="QtCharts_Test.ui" />
+    <QtUic Include="Seriesline_Chart.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pcap_loop_thread.h" />
@@ -124,6 +130,10 @@
   <ItemGroup>
     <ClInclude Include="common_define.h" />
     <ClInclude Include="common_function.h" />
+    <QtMoc Include="NtripClient.h" />
+    <QtMoc Include="ConfigFile.h" />
+    <QtMoc Include="Seriesline_Chart.h" />
+    <QtMoc Include="QtCharts_Test.h" />
     <QtMoc Include="device_log_thread.h" />
     <QtMoc Include="SCheckBoxHeaderView.h" />
     <QtMoc Include="devices_manager.h" />

@@ -240,6 +240,8 @@ bool devices_manager::fitler_pack(app_packet_t & pak)
 		case 0x0a04:
 		case 0x0a05:
 		case 0x0a06:
+		case 0x4D44:
+		case 0x6749:
 			return false;
 			break;
 		default:

@@ -512,6 +512,7 @@ void device_upgrade_thread::step_SDK_sync()
 
 void device_upgrade_thread::step_SDK_set_baudrate()
 {
+	/*
 	//send change baudrate
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send change baudrate."));
 	send_SDK_change_baudrate();
@@ -545,6 +546,7 @@ void device_upgrade_thread::step_SDK_set_baudrate()
 	mutex.unlock();
 	emit devices_manager::Instance().sgnLog(QString::asprintf("revc check baudrate."));
 	QThread::msleep(1);
+	*/
 	//send check ready
 	emit devices_manager::Instance().sgnLog(QString::asprintf("send check ready."));
 	send_SDK_check_ready();
@@ -636,9 +638,10 @@ void device_upgrade_thread::step_IMU_jump_JI()
 {
 	while (dev_cmd_status != IMU_CMD_JI_RET && !m_isStop) {
 		send_IMU_boot_cmd();
-		QThread::msleep(100);
+		QThread::msleep(200);
 	}
-	waiting_restart();
+	QThread::msleep(1000);
+	//waiting_restart();
 }
 
 void device_upgrade_thread::step_IMU_jump_JA()
@@ -721,7 +724,7 @@ bool device_upgrade_thread::upgrade_sdk_process()
 	}
 	QThread::sleep(4);
 	step_SDK_set_baudrate();
-	QThread::sleep(1);
+	//QThread::sleep(1);
 	step_SDK_send_loader();
 	QThread::sleep(5);
 	step_SDK_start_write();

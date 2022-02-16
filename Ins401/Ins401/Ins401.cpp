@@ -154,27 +154,27 @@ void Ins401::loadConfig()
 
 void Ins401::readListConfig(QJsonObject & config)
 {
-	QJsonArray& hostArray = config["hostlist"].toArray();
+	QJsonArray hostArray = config["hostlist"].toArray();
 	for (int i = 0; i < hostArray.size(); i++) {
 		if (hostArray[i].toString().isEmpty()) continue;
 		ui.host_cmb->addItem(hostArray[i].toString());
 	}
-	QJsonArray& portArray = config["portlist"].toArray();
+	QJsonArray portArray = config["portlist"].toArray();
 	for (int i = 0; i < portArray.size(); i++) {
 		if (portArray[i].toString().isEmpty()) continue;
 		ui.port_cmb->addItem(portArray[i].toString());
 	}
-	QJsonArray& mountArray = config["mountlist"].toArray();
+	QJsonArray mountArray = config["mountlist"].toArray();
 	for (int i = 0; i < mountArray.size(); i++) {
 		if (mountArray[i].toString().isEmpty()) continue;
 		ui.mountpoint_cmb->addItem(mountArray[i].toString());
 	}
-	QJsonArray& userArray = config["userlist"].toArray();
+	QJsonArray userArray = config["userlist"].toArray();
 	for (int i = 0; i < userArray.size(); i++) {
 		if (userArray[i].toString().isEmpty()) continue;
 		ui.user_cmb->addItem(userArray[i].toString());
 	}
-	QJsonArray& passwordArray = config["passwordlist"].toArray();
+	QJsonArray passwordArray = config["passwordlist"].toArray();
 	for (int i = 0; i < passwordArray.size(); i++) {
 		if (passwordArray[i].toString().isEmpty()) continue;
 		ui.password_cmb->addItem(passwordArray[i].toString());
@@ -182,27 +182,27 @@ void Ins401::readListConfig(QJsonObject & config)
 }
 void Ins401::writeListConfig(QJsonObject & config)
 {
-	QJsonArray& hostArray = config["hostlist"].toArray();
+	QJsonArray hostArray = config["hostlist"].toArray();
 	if (!hostArray.contains(ui.host_cmb->currentText().trimmed())) {
 		hostArray.append(ui.host_cmb->currentText().trimmed());
 		config.insert("hostlist", hostArray);
 	}
-	QJsonArray& portArray = config["portlist"].toArray();
+	QJsonArray portArray = config["portlist"].toArray();
 	if (!portArray.contains(ui.port_cmb->currentText().trimmed())) {
 		portArray.append(ui.port_cmb->currentText().trimmed());
 		config.insert("portlist", portArray);
 	}
-	QJsonArray& mountArray = config["mountlist"].toArray();
+	QJsonArray mountArray = config["mountlist"].toArray();
 	if (!mountArray.contains(ui.mountpoint_cmb->currentText().trimmed())) {
 		mountArray.append(ui.mountpoint_cmb->currentText().trimmed());
 		config.insert("mountlist", mountArray);
 	}
-	QJsonArray& userArray = config["userlist"].toArray();
+	QJsonArray userArray = config["userlist"].toArray();
 	if (!userArray.contains(ui.user_cmb->currentText().trimmed())) {
 		userArray.append(ui.user_cmb->currentText().trimmed());
 		config.insert("userlist", userArray);
 	}
-	QJsonArray& passwordArray = config["passwordlist"].toArray();
+	QJsonArray passwordArray = config["passwordlist"].toArray();
 	if (!passwordArray.contains(ui.password_cmb->currentText().trimmed())) {
 		passwordArray.append(ui.password_cmb->currentText().trimmed());
 		config.insert("passwordlist", passwordArray);

@@ -8,8 +8,12 @@
 #define		IMU_PACKET_LEN		192
 #define		SDK_PACKET_LEN		1024
 
-/*******************IAP CMD****************************/
+/*******************USER CMD****************************/
 #define     IAP_CMD_GV              0xcc01              /** IAP Get BootLoader Version **/
+#define     USER_CMD_GET_CONFIG     0xcc02              /** Get User Configuration **/
+#define     USER_CMD_SET_CONFIG     0xcc03              /** Set User Configuration **/
+#define     USER_CMD_RTCM_DATA		0x0b02
+/*******************IAP CMD****************************/
 #define     IAP_CMD_JI              0xaa01              /** IAP Jump to Boot     **/
 #define     IAP_CMD_JA              0xaa02              /** IAP Jump to APP     **/
 #define     IAP_CMD_WA              0xaa03              /** IAP Write APP       **/
@@ -26,6 +30,7 @@
 #define     SDK_CMD_JG				0xaa06              /** St9100 Jump GNSS **/
 #define		SDK_CMD_SENDSDK			0xaa07              /** St9100 Send SDK **/
 #define     SDK_CMD_SENDJL			0xaa08              /** St9100 Send Loader **/
+
 #define     ST9100_ETH_SYNC         {0xfd, 0xc6, 0x49, 0x28}            /** St9100 Sync **/
 #define     ST9100_ETH_CHGBUAD		0x71                /** St9100 Change BaudRate **/
 #define     ST9100_ETH_CHKBAUD		0x38                /** St9100 Check BaudRate **/
@@ -88,5 +93,10 @@ typedef struct {
 	uint32_t debugSize;
 	uint32_t debugData;
 }stSTA9100BinInfo;
+
+struct config_parameter_t {
+	uint32_t sequence_id;
+	float value;
+};
 
 #pragma pack(pop)

@@ -107,22 +107,34 @@
   <ItemGroup>
     <ClCompile Include="common_function.c" />
     <ClCompile Include="ConfigFile.cpp" />
-    <ClCompile Include="device_log_thread.cpp" />
+    <ClCompile Include="device_info.cpp" />
+    <ClCompile Include="device_obj.cpp" />
+    <ClCompile Include="device_record_thread.cpp" />
     <ClCompile Include="device_upgrade_thread.cpp" />
+    <ClCompile Include="InsSolWidget.cpp" />
     <ClCompile Include="NtripClient.cpp" />
+    <ClCompile Include="ntrip_record_thread.cpp" />
+    <ClCompile Include="OrientationGuide.cpp" />
     <ClCompile Include="pcap_loop_thread.cpp" />
     <ClCompile Include="devices_manager.cpp" />
+    <ClCompile Include="QCommonFuction.cpp" />
     <ClCompile Include="QtCharts_Test.cpp" />
+    <ClCompile Include="RtkSolWidget.cpp" />
     <ClCompile Include="SCheckBoxHeaderView.cpp" />
     <ClCompile Include="Seriesline_Chart.cpp" />
+    <ClCompile Include="SingleRecorderUI.cpp" />
     <ClCompile Include="sta9100.cpp" />
     <QtRcc Include="Ins401.qrc" />
     <QtUic Include="Ins401.ui" />
     <QtMoc Include="Ins401.h" />
     <ClCompile Include="Ins401.cpp" />
     <ClCompile Include="main.cpp" />
+    <QtUic Include="InsSolWidget.ui" />
+    <QtUic Include="OrientationGuide.ui" />
     <QtUic Include="QtCharts_Test.ui" />
+    <QtUic Include="RtkSolWidget.ui" />
     <QtUic Include="Seriesline_Chart.ui" />
+    <QtUic Include="SingleRecorderUI.ui" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="pcap_loop_thread.h" />
@@ -130,11 +142,20 @@
   <ItemGroup>
     <ClInclude Include="common_define.h" />
     <ClInclude Include="common_function.h" />
+    <QtMoc Include="OrientationGuide.h" />
+    <QtMoc Include="ntrip_record_thread.h" />
+    <QtMoc Include="device_obj.h" />
+    <QtMoc Include="device_record_thread.h" />
+    <QtMoc Include="device_info.h" />
+    <ClInclude Include="Ins401_Message.h" />
+    <QtMoc Include="RtkSolWidget.h" />
+    <QtMoc Include="InsSolWidget.h" />
+    <QtMoc Include="QCommonFuction.h" />
+    <QtMoc Include="SingleRecorderUI.h" />
     <QtMoc Include="NtripClient.h" />
     <QtMoc Include="ConfigFile.h" />
     <QtMoc Include="Seriesline_Chart.h" />
     <QtMoc Include="QtCharts_Test.h" />
-    <QtMoc Include="device_log_thread.h" />
     <QtMoc Include="SCheckBoxHeaderView.h" />
     <QtMoc Include="devices_manager.h" />
     <QtMoc Include="device_upgrade_thread.h" />

@@ -24,4 +24,6 @@ private:
 	bool		m_isStop;
 	pcap_t*		adhandle;
 	std::string card_name;
+signals:
+	void sgnReceiveData(QByteArray buffer);
 };

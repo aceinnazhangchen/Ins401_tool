@@ -1,0 +1,41 @@
+{
+    "2109000089": {
+        "arms": {
+            "gnss lever arm x": 1,
+            "gnss lever arm y": 2,
+            "gnss lever arm z": 3,
+            "rotation rbvx": 0,
+            "rotation rbvy": 90,
+            "rotation rbvz": 0,
+            "user lever arm x": 7,
+            "user lever arm y": 8,
+            "user lever arm z": 9,
+            "vrp lever arm x": 4,
+            "vrp lever arm y": 5,
+            "vrp lever arm z": 6
+        },
+        "base": {
+            "host": "58.215.20.43",
+            "mountpoint": "WX02",
+            "password": "47JWBPSH08OLFH8U",
+            "port": "2201",
+            "username": "zhangchen"
+        }
+    },
+    "hostlist": [
+        "58.215.20.43"
+    ],
+    "mountlist": [
+        "WX02",
+        "WX05"
+    ],
+    "passwordlist": [
+        "47JWBPSH08OLFH8U"
+    ],
+    "portlist": [
+        "2201"
+    ],
+    "userlist": [
+        "zhangchen"
+    ]
+}

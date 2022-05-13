@@ -24,6 +24,7 @@ void pcap_loop_thread::run()
 	struct pcap_pkthdr *header;
 	const u_char *pkt_data;
 	emit devices_manager::Instance().sgnLog("running...");
+	emit devices_manager::Instance().sgnPcapStarted();
 	uint64_t src_mac_num = 0;
 	while ((res = pcap_next_ex(adhandle, &header, &pkt_data)) >= 0)
 	{
@@ -41,7 +42,7 @@ void pcap_loop_thread::run()
 
 	pcap_close(adhandle);
 	adhandle = NULL;
-	emit devices_manager::Instance().sgnLog("closed");
+	emit devices_manager::Instance().sgnLog("pcap loop closed");
 }
 
 void pcap_loop_thread::stop()
@@ -100,16 +101,9 @@ void pcap_loop_thread::recv_pack(pcap_pkthdr* header, const u_char* buffer)
 	strftime(timestr, sizeof timestr, "%H:%M:%S", ltime);
 
 	if (header->len > MAC_ADDRESS_LEN*2){
-		if (devices_manager::Instance().log_flag) {
-			devices_manager::Instance().log_data((const uint8_t*)buffer, header->len);
-		}
-		app_packet_t pak = { 0 };
-		memcpy(&pak, buffer, header->len);
-		devices_manager::Instance().pack_from_little_endian(pak);
-		if (devices_manager::Instance().fitler_pack(pak) && devices_manager::Instance().fitler_mac(pak)) {
-			//emit devices_manager::Instance().sgnLog(QString::asprintf("%s.%.6d len:%3d,caplen:%3d", timestr, header->ts.tv_usec, header->len, header->caplen));		
-			devices_manager::Instance().dispatch_pak(pak);
-		}
+		QByteArray data_array((const char*)buffer, header->len);
+		emit sgnReceiveData(data_array);
+		//devices_manager::Instance().receive_from_pcap((const uint8_t*)buffer, header->len);
 	}
 	else
 	{

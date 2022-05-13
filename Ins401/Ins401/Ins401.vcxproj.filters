@@ -58,9 +58,6 @@
     <ClCompile Include="sta9100.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="device_log_thread.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="QtCharts_Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -71,6 +68,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NtripClient.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SingleRecorderUI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QCommonFuction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InsSolWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RtkSolWidget.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="device_obj.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="device_record_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="device_info.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ntrip_record_thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OrientationGuide.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -87,9 +111,6 @@
     <QtMoc Include="SCheckBoxHeaderView.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <QtMoc Include="device_log_thread.h">
-      <Filter>Header Files</Filter>
-    </QtMoc>
     <QtMoc Include="QtCharts_Test.h">
       <Filter>Header Files</Filter>
     </QtMoc>
@@ -102,6 +123,33 @@
     <QtMoc Include="NtripClient.h">
       <Filter>Header Files</Filter>
     </QtMoc>
+    <QtMoc Include="SingleRecorderUI.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="QCommonFuction.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="InsSolWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="RtkSolWidget.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="device_obj.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="device_record_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="device_info.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ntrip_record_thread.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="OrientationGuide.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common_define.h">
@@ -110,12 +158,27 @@
     <ClInclude Include="common_function.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Ins401_Message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <QtUic Include="QtCharts_Test.ui">
       <Filter>Form Files</Filter>
     </QtUic>
     <QtUic Include="Seriesline_Chart.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="SingleRecorderUI.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="InsSolWidget.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="RtkSolWidget.ui">
+      <Filter>Form Files</Filter>
+    </QtUic>
+    <QtUic Include="OrientationGuide.ui">
       <Filter>Form Files</Filter>
     </QtUic>
   </ItemGroup>

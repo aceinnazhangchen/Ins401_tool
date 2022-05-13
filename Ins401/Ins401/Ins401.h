@@ -10,6 +10,9 @@
 #include <QMimeData>
 #include "SCheckBoxHeaderView.h"
 #include "QtCharts_Test.h"
+#include "SingleRecorderUI.h"
+
+typedef QMap<uint64_t, SingleRecorderUI*> MapRecorders;
 
 class Ins401 : public QMainWindow
 {
@@ -33,6 +36,7 @@ protected:
 	void writeConfig(QJsonObject & config);
 	void readListConfig(QJsonObject & config);
 	void writeListConfig(QJsonObject & config);
+	void CloseDeviceRecordWidgets();
 public slots:
 	void onLog(QString log);
 	void onListenClicked();
@@ -41,12 +45,11 @@ public slots:
 	void onSendClicked();
 	void onClearClicked();
 	void onSaveClicked();
-	void onConnectClicked();
 	void onUpgradeClicked();
-	void onAddUpgradeDevice(QString index_str);
-	void onUpdateUpgradeDevice(QString index_str);
-	void onAddLogDevice(QString index_str);
-	void onUpdateLogDevice(QString index_str);
+	void onAddUpgradeDevice(uint64_t index);
+	void onUpdateUpgradeDevice(uint64_t index);
+	void onAddLogDevice(uint64_t index);
+	void onUpdateLogDevice(uint64_t index);
 	void onClearDevices();
 	void onCheckAll(bool check);
 	void onChangeMode(int row, int mode);
@@ -55,16 +58,17 @@ public slots:
 	void onUpgradeStep(int row, QString upgrade_step);
 	void onShowLogSize(int row, int percent);
 	void onDebugCheck(bool check);
-	void onFilterCheck(bool check);
 	void onFilterMacCheck(bool check);
 	void onCheckUpgradeFinished();
 	void onDevsTableChanged(int row, int col);
-	void onLogCheck(bool check);
 	void onChartClicked();
-	void onEnableBaseStationUI(bool enable);
-	void onBaseStationDataSize(int data_size);
+	void onLogTableDoubleClicked(int row, int column);
+	void onShowConfigParameterOnUI(uint64_t index, int sequence_id, float value);
+	void onPcapStarted();
+	void onLogTypeChanged(int index);
 private:
     Ui::Ins401Class ui;
 	SCheckBoxHeaderView* m_checkHeader;
 	QtCharts_Test* chart_test;
+	MapRecorders m_RecorderMap;
 };

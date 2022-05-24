@@ -22,6 +22,15 @@
             "username": "zhangchen"
         }
     },
+    "2279000038": {
+        "base": {
+            "host": "58.215.20.43",
+            "mountpoint": "WX02",
+            "password": "47JWBPSH08OLFH8U",
+            "port": "2201",
+            "username": "zhangchen"
+        }
+    },
     "hostlist": [
         "58.215.20.43"
     ],

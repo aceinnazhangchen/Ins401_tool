@@ -155,8 +155,8 @@ void device_upgrade_thread::recv_pack(msg_packet_t & msg_pak)
 	case IMU_CMD_WA_RET:
 	{
 		//ret_file_offset_addr = qFromBigEndian<uint32_t>(msg_pak.msg_data);
-		ret_file_offset_addr = file_offset_addr;
 		mutex.lock();
+		ret_file_offset_addr = file_offset_addr;
 		dev_cmd_status = msg_pak.msg_type;
 		cond_wait.wakeAll();
 		mutex.unlock();

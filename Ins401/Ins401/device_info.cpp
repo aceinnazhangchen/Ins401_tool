@@ -74,10 +74,11 @@ int32_t device_info::get_ui_record_table_row()
 void device_info::reg_exp_device_info()
 {
 	int index = dev_info.indexOf("RTK_INS");
+	if (index < 0) return;
 	app_version = dev_info.mid(index);
 	QStringList list;
 	list = dev_info.split(" ");
-	if (list.size() >= 4) {
+	if (list.size() >= 8) {
 		pn = list[1];
 		sn = list[2];
 		firmware_version = list[7];

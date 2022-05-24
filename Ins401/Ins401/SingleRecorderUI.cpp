@@ -380,10 +380,10 @@ void SingleRecorderUI::onReceiveLogPak(int type)
 	if (m_device_ptr->get_recorder() == NULL) return;
 	switch (type)
 	{
-	case em_GNSS_SOL:{
+	case em_INS_SOL:{
 		m_InsSolWidget->ShowInsSol(m_device_ptr->get_recorder()->m_ins_pak);
 	}break;
-	case em_INS_SOL: {
+	case em_GNSS_SOL: {
 		m_RtkSolWidget->ShowRtkSol(m_device_ptr->get_recorder()->m_gnss_pak);
 	}break;
 	default:

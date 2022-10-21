@@ -2,7 +2,7 @@
 #include <QtWidgets/QApplication>
 
 #define PROGRAM "Ins401"
-#define VERSION "v1.4.3"
+#define VERSION "v1.4.13"
 
 #include <pcap.h>
 #ifdef _WIN32

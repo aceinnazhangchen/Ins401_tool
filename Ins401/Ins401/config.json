@@ -15,11 +15,11 @@
             "vrp lever arm z": 6
         },
         "base": {
-            "host": "58.215.20.43",
-            "mountpoint": "WX02",
-            "password": "47JWBPSH08OLFH8U",
-            "port": "2201",
-            "username": "zhangchen"
+            "host": "117.135.142.201",
+            "mountpoint": "RTCM33_GRCEpro",
+            "password": "pew7yus7",
+            "port": "8002",
+            "username": "abkf1293"
         }
     },
     "2279000038": {
@@ -32,19 +32,24 @@
         }
     },
     "hostlist": [
-        "58.215.20.43"
+        "58.215.20.43",
+        "117.135.142.201"
     ],
     "mountlist": [
         "WX02",
-        "WX05"
+        "WX05",
+        "RTCM33_GRCEpro"
     ],
     "passwordlist": [
-        "47JWBPSH08OLFH8U"
+        "47JWBPSH08OLFH8U",
+        "pew7yus7"
     ],
     "portlist": [
-        "2201"
+        "2201",
+        "8002"
     ],
     "userlist": [
-        "zhangchen"
+        "zhangchen",
+        "abkf1293"
     ]
 }

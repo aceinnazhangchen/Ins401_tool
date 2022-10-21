@@ -388,9 +388,14 @@ bool devices_manager::parse_upgrade_file()
 			ret = true;
 		}
 		else {
-			emit sgnLog(QString("error:")+QString(sub_file_flag) + QString::number(sub_part_size));
-			ret = false;
-			break;
+			if (i >= 3) {
+				sub_file_list[i].file_switch = false;
+			}
+			else {
+				emit sgnLog(QString("load file error:") + QString(sub_file_list[i].file_flag) + QString(" ") +  QString(sub_file_flag) + QString::number(sub_part_size));
+				ret = false;
+				break;
+			}			
 		}
 	}
 	upgrade_file.close();

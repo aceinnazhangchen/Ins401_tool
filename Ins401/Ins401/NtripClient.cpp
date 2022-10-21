@@ -110,7 +110,7 @@ void NtripClient::onClientReceiveData()
 void NtripClient::onSendGGA(QByteArray gga)
 {
 	if (!isValid()) return;
-	if (m_nNetPackageNum <= 1) return;
+	if (m_nNetPackageNum < 1) return;
 	write(gga);
 }
 

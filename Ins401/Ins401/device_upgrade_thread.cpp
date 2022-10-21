@@ -12,6 +12,9 @@ static uint8_t sta_sync[4] = ST9100_ETH_SYNC;
 extern uint8_t  STA9100_Loader[];
 extern uint32_t STA9100LoadSize;
 
+extern uint8_t  xldr_teseo5_bootloader_Bx_buffer[];
+extern uint32_t Teseo5BootLoaderSize;
+
 device_upgrade_thread::device_upgrade_thread(QObject *parent)
 	: QThread(parent)
 	, m_isStop(false)
@@ -25,6 +28,9 @@ device_upgrade_thread::device_upgrade_thread(QObject *parent)
 	, upgrade_step(upgrade_rtk)
 	, sta9100_last_recv_code(0)
 {
+	m_Major_Number = 0;
+	m_Minor_Number = 0;
+	m_Revision_Number = 0;
 	memset(&STA9100BinInfo, 0, sizeof(STA9100BinInfo));
 	STA9100BinInfo.bootMode = 0x01;
 	STA9100BinInfo.destinationAddress = 0x10000000;
@@ -47,6 +53,9 @@ void device_upgrade_thread::run()
 		}
 		if (sub_file_list[upgrade_sdk].file_switch) {
 			if (upgrade_sdk_process() == false) { break; }
+			if (dev_info.indexOf("INS402") > 0) {
+				if (upgrade_sdk2_process() == false) { break; }
+			}			
 		}
 		if (sub_file_list[upgrade_imu].file_switch) {
 			upgrade_imu_process();
@@ -74,11 +83,43 @@ void device_upgrade_thread::set_dest_mac(uint8_t mac[MAC_ADDRESS_LEN])
 void device_upgrade_thread::set_dev_info(const char * info)
 {
 	dev_info = info;
+	reg_exp_device_info();
+}
+
+void device_upgrade_thread::reg_exp_device_info() {
+	int index = dev_info.indexOf("RTK_INS");
+	if (index < 0) return;
+	QString app_version = dev_info.mid(index);
+	app_version = app_version.replace(',', ' ');
+	QStringList list;
+	list = app_version.split(" ");
+	if (list.size() >= 3) {
+		int version_index = list[2].indexOf("v");
+		if (version_index < 0) return;
+		QString firmware_version = list[2].mid(version_index+1);
+		set_firmware_version(firmware_version);
+	}
 }
 
 void device_upgrade_thread::set_ui_table_row(const int32_t row)
 {
 	ui_table_row = row;
+}
+
+void device_upgrade_thread::set_firmware_version(QString version)
+{
+	if (version.isEmpty()) return;
+	QStringList versions = version.split(".");
+	if (versions.size() == 3) {//一般版本为0.0.0
+		m_Major_Number = versions[0].toInt();
+		m_Minor_Number = versions[1].toInt();
+		m_Revision_Number = versions[2].toInt();
+	}
+	else if (versions.size() == 2) {//大版本为0.0
+		m_Major_Number = versions[0].toInt();
+		m_Minor_Number = versions[1].toInt();
+		m_Revision_Number = 0;
+	}
 }
 
 QString device_upgrade_thread::get_mac_str()
@@ -122,6 +163,7 @@ void device_upgrade_thread::recv_pack(msg_packet_t & msg_pak)
 	case IAP_CMD_JI:
 	case IAP_CMD_JA:
 	case SDK_CMD_JS:
+	case SDK_CMD_JS_2:
 	case SDK_CMD_JG:
 	case IMU_CMD_JI_RET:
 	case IMU_CMD_JA_RET:
@@ -215,6 +257,14 @@ void device_upgrade_thread::send_SDK_boot_cmd()
 	devices_manager::Instance().send_pack(pak);
 }
 
+void device_upgrade_thread::send_SDK_boot2_cmd()
+{
+	app_packet_t pak = { 0 };
+	devices_manager::Instance().make_pack(pak, SDK_CMD_JS_2, 0, NULL);
+	memcpy(pak.dest_mac, dest_mac, MAC_ADDRESS_LEN);
+	devices_manager::Instance().send_pack(pak);
+}
+
 void device_upgrade_thread::send_SDK_app_cmd()
 {
 	app_packet_t pak = { 0 };
@@ -222,6 +272,7 @@ void device_upgrade_thread::send_SDK_app_cmd()
 	memcpy(pak.dest_mac, dest_mac, MAC_ADDRESS_LEN);
 	devices_manager::Instance().send_pack(pak);
 }
+
 
 void device_upgrade_thread::send_SDK_sync()
 {
@@ -277,34 +328,66 @@ void device_upgrade_thread::send_SDK_boot_pre_info()
 
 	uint32_t crc32 = 0;
 	uint32_t BootStartAddr = 0;
-	uint8_t* pStaLoader = STA9100_Loader;
-	crc32 = calc_crc32(crc32, (uint8_t*)&STA9100LoadSize, 4);
-	crc32 = calc_crc32(crc32, (uint8_t*)&BootStartAddr, 4);
-	crc32 = calc_crc32(crc32, pStaLoader, STA9100LoadSize);
-	devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&crc32);
-	devices_manager::Instance().send_pack(pak);
-	QThread::usleep(100);
-	devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&STA9100LoadSize);
-	devices_manager::Instance().send_pack(pak);
-	QThread::usleep(100);
-	devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&BootStartAddr);
-	devices_manager::Instance().send_pack(pak);	
+	if (m_Major_Number >= 28 && ((m_Minor_Number == 4 && m_Revision_Number >= 15) || (m_Minor_Number > 4))) {
+		uint8_t* pStaLoader = xldr_teseo5_bootloader_Bx_buffer;
+		crc32 = calc_crc32(crc32, (uint8_t*)&Teseo5BootLoaderSize, 4);
+		crc32 = calc_crc32(crc32, (uint8_t*)&BootStartAddr, 4);
+		crc32 = calc_crc32(crc32, pStaLoader, Teseo5BootLoaderSize);
+		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&crc32);
+		devices_manager::Instance().send_pack(pak);
+		QThread::usleep(100);
+		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&Teseo5BootLoaderSize);
+		devices_manager::Instance().send_pack(pak);
+		QThread::usleep(100);
+		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&BootStartAddr);
+		devices_manager::Instance().send_pack(pak);
+	}
+	else {
+		uint8_t* pStaLoader = STA9100_Loader;
+		crc32 = calc_crc32(crc32, (uint8_t*)&STA9100LoadSize, 4);
+		crc32 = calc_crc32(crc32, (uint8_t*)&BootStartAddr, 4);
+		crc32 = calc_crc32(crc32, pStaLoader, STA9100LoadSize);
+		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&crc32);
+		devices_manager::Instance().send_pack(pak);
+		QThread::usleep(100);
+		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&STA9100LoadSize);
+		devices_manager::Instance().send_pack(pak);
+		QThread::usleep(100);
+		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, 4, (uint8_t*)&BootStartAddr);
+		devices_manager::Instance().send_pack(pak);
+	}
 }
 
 void device_upgrade_thread::send_SDK_boot_info()
 {
 	app_packet_t pak = { 0 };
 	uint32_t bffer_current = 0;
-	uint32_t pack_len = SDK_PACKET_LEN;
 	memcpy(pak.dest_mac, dest_mac, MAC_ADDRESS_LEN);
-	while (bffer_current < STA9100LoadSize) {
-		if (STA9100LoadSize - bffer_current < SDK_PACKET_LEN) {
-			pack_len = STA9100LoadSize - bffer_current;
+	if (m_Major_Number >= 28 && ((m_Minor_Number == 4 && m_Revision_Number >= 15) || (m_Minor_Number > 4))) {
+		emit devices_manager::Instance().sgnLog(QString::asprintf("send boot info xldr_teseo5_bootloader. version %d,%d,%d", m_Major_Number, m_Minor_Number, m_Revision_Number));
+		uint32_t pack_len = SDK_BOOTLOADER_PACKET_LEN;
+		while (bffer_current < Teseo5BootLoaderSize) {
+			if (Teseo5BootLoaderSize - bffer_current < SDK_BOOTLOADER_PACKET_LEN) {
+				pack_len = Teseo5BootLoaderSize - bffer_current;
+			}
+			devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, pack_len, &xldr_teseo5_bootloader_Bx_buffer[bffer_current]);
+			devices_manager::Instance().send_pack(pak);
+			bffer_current += pack_len;
+			QThread::usleep(100);
 		}
-		devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, pack_len, &STA9100_Loader[bffer_current]);
-		devices_manager::Instance().send_pack(pak);
-		bffer_current += pack_len;
-		QThread::usleep(100);
+	}
+	else {
+		emit devices_manager::Instance().sgnLog(QString::asprintf("send boot info STA9100_Loader. version %d,%d,%d", m_Major_Number, m_Minor_Number, m_Revision_Number));
+		uint32_t pack_len = SDK_PACKET_LEN;
+		while (bffer_current < STA9100LoadSize) {
+			if (STA9100LoadSize - bffer_current < SDK_PACKET_LEN) {
+				pack_len = STA9100LoadSize - bffer_current;
+			}
+			devices_manager::Instance().make_pack(pak, SDK_CMD_SENDSDK, pack_len, &STA9100_Loader[bffer_current]);
+			devices_manager::Instance().send_pack(pak);
+			bffer_current += pack_len;
+			QThread::usleep(100);
+		}
 	}
 }
 
@@ -483,6 +566,17 @@ void device_upgrade_thread::step_SDK_jump_JS()
 	send_SDK_boot_cmd();
 	mutex.lock();
 	while (dev_cmd_status != SDK_CMD_JS && !m_isStop) {
+		cond_wait.wait(&mutex);
+	}
+	mutex.unlock();
+	waiting_restart();
+}
+
+void device_upgrade_thread::step_SDK_jump_JS_2()
+{
+	send_SDK_boot2_cmd();
+	mutex.lock();
+	while (dev_cmd_status != SDK_CMD_JS_2 && !m_isStop) {
 		cond_wait.wait(&mutex);
 	}
 	mutex.unlock();
@@ -715,7 +809,8 @@ bool device_upgrade_thread::upgrade_sdk_process()
 	upgrade_step = upgrade_sdk;
 	file_offset_addr = 0;
 	ret_file_offset_addr = 0;
-	emit devices_manager::Instance().sgnUpgradeStep(ui_table_row, "sdk");
+	sta9100_last_recv_code = 0;
+	emit devices_manager::Instance().sgnUpgradeStep(ui_table_row, "sdk1");
 	step_SDK_jump_JS();
 	step_SDK_sync();
 	for (int i = 0; i < 5; i++) {
@@ -732,11 +827,43 @@ bool device_upgrade_thread::upgrade_sdk_process()
 	step_SDK_write_file();
 	step_SDK_jump_JG();
 	if (sta9100_last_recv_code == 0xcc) {
-		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "success");
+		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "sdk1 success");
 		return true;
 	}
 	else {
-		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "falied");
+		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "sdk1 falied");
+		return false;
+	}
+}
+
+bool device_upgrade_thread::upgrade_sdk2_process()
+{
+	upgrade_step = upgrade_sdk;
+	file_offset_addr = 0;
+	ret_file_offset_addr = 0;
+	sta9100_last_recv_code = 0;
+	emit devices_manager::Instance().sgnUpgradeStep(ui_table_row, "sdk2");
+	step_SDK_jump_JS_2();
+	step_SDK_sync();
+	for (int i = 0; i < 5; i++) {
+		send_SDK_file(SDK_CMD_SENDJL);
+		QThread::msleep(10);
+	}
+	QThread::sleep(4);
+	step_SDK_set_baudrate();
+	//QThread::sleep(1);
+	step_SDK_send_loader();
+	QThread::sleep(5);
+	step_SDK_start_write();
+	QThread::sleep(2);
+	step_SDK_write_file();
+	step_SDK_jump_JG();
+	if (sta9100_last_recv_code == 0xcc) {
+		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "sdk2 success");
+		return true;
+	}
+	else {
+		emit devices_manager::Instance().sgnUpdateStatus(ui_table_row, "sdk2 falied");
 		return false;
 	}
 }
